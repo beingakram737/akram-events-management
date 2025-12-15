@@ -17,7 +17,10 @@ const PORT = process.env.PORT || 8000;
 ====================== */
 app.use(
   cors({
-    origin: "*",
+    origin: [
+      "http://localhost:5173",
+      "https://akram-events-management.netlify.app",
+    ],
     credentials: true,
   })
 );
@@ -27,7 +30,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 /* ======================
-   ROOT ROUTE
+   ROOT ROUTE (Render Health Check)
 ====================== */
 app.get("/", (req, res) => {
   res.status(200).json({
@@ -37,7 +40,17 @@ app.get("/", (req, res) => {
 });
 
 /* ======================
-   FAVICON
+   API TEST ROUTE (DEBUG)
+====================== */
+app.get("/api/test", (req, res) => {
+  res.json({
+    success: true,
+    message: "API working fine ✅",
+  });
+});
+
+/* ======================
+   FAVICON FIX
 ====================== */
 app.get("/favicon.ico", (req, res) => {
   res.status(204).end();
@@ -50,7 +63,7 @@ app.use("/api/events", eventRoutes);
 app.use("/api/auth", authRoutes);
 
 /* ======================
-   SAFE 404 (NO ERROR THROW)
+   SAFE 404 HANDLER
 ====================== */
 app.use((req, res) => {
   res.status(404).json({
@@ -60,7 +73,7 @@ app.use((req, res) => {
 });
 
 /* ======================
-   DB + SERVER
+   DATABASE + SERVER
 ====================== */
 mongoose
   .connect(process.env.MONGODB_URL)
