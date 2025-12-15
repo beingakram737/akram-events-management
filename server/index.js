@@ -15,15 +15,26 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 8000;
 
-// Middleware
-app.use(cors({
-  origin: "http://localhost:5173",
-  credentials: true,
-}));
+/* =======================
+   MIDDLEWARE
+======================= */
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",       // local frontend
+      "https://akram-events-management.netlify.app" // future Netlify URL
+    ],
+    credentials: true,
+  })
+);
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+/* =======================
+   ROOT ROUTE (RENDER FIX)
+======================= */
 app.get("/", (req, res) => {
   res.status(200).json({
     success: true,
@@ -31,27 +42,35 @@ app.get("/", (req, res) => {
   });
 });
 
-// Routes
+/* =======================
+   API ROUTES
+======================= */
 app.use("/api/events", eventRoutes);
 app.use("/api/auth", authRoutes);
 
-// 404
+/* =======================
+   404 HANDLER (LAST)
+======================= */
 app.use((req, res, next) => {
   next(new ErrorResponse(`Can't find ${req.originalUrl} on this server!`, 404));
 });
 
-// Error handler
+/* =======================
+   GLOBAL ERROR HANDLER
+======================= */
 app.use(errorHandler);
 
-// DB
-mongoose.connect(process.env.MONGODB_URL)
-  .then(() => console.log("MongoDB Connected"))
-  .catch(err => {
-    console.error(err);
+/* =======================
+   DATABASE + SERVER
+======================= */
+mongoose
+  .connect(process.env.MONGODB_URL)
+  .then(() => console.log("MongoDB Connected Successfully"))
+  .catch((err) => {
+    console.error("MongoDB Connection Error:", err.message);
     process.exit(1);
   });
 
-// Server
-app.listen(PORT, () =>
-  console.log(`Server running on port ${PORT}`)
-);
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
